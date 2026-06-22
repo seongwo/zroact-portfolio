@@ -1,0 +1,98 @@
+{
+  "paths": {
+    "data_root": "benchmark2/data/viz_shufflenet_full",
+    "labeling_root": "../labeling",
+    "prompt_path": "benchmark2/prompts/action_timev0.txt",
+    "model_path": "benchmark2/models/Qwen3.5-0.8B",
+    "dataset_output_dir": "benchmark2/training/datasets/qwen35_08b_action_v0",
+    "training_output_dir": "benchmark2/training/outputs/qwen35_08b_action_v0"
+  },
+  "data": {
+    "groups": {
+      "normal_plant_rgb": "normal_plant/obj_train_data/normal_plant_rgb",
+      "climb-over-fence_plant_rgb": "plant_climb/obj_train_data/climb-over-fence_plant_rgb",
+      "climb-over-fence_smart_rgb": "smart_climb/obj_train_data/climb-over-fence_smart_rgb"
+    },
+    "fps": 30.0,
+    "stage1_window": 16,
+    "num_frames_per_request": 3,
+    "within_sequence_gap": 10,
+    "request_stride": 30,
+    "action_top_k": 2,
+    "include_action_confidence": false,
+    "danger_threshold": 0.3,
+    "unsafe_threshold": 0.3,
+    "system_prompt": "You are an industrial CCTV intrusion classifier. Return only one JSON object with risk_state."
+  },
+  "split": {
+    "train_ratio": 0.8,
+    "validation_ratio": 0.1,
+    "test_ratio": 0.1,
+    "seed_search_count": 10000
+  },
+  "sampling": {
+    "normal_factor": 1,
+    "unsafe_factor": 2,
+    "danger_factor": 1
+  },
+  "image": {
+    "width": 768,
+    "height": 432,
+    "mode": "RGB",
+    "resample": "lanczos",
+    "collator_resize": "max"
+  },
+  "model": {
+    "load_in_4bit": false,
+    "dtype": "bfloat16",
+    "use_gradient_checkpointing": "unsloth"
+  },
+  "lora": {
+    "finetune_vision_layers": true,
+    "finetune_language_layers": true,
+    "finetune_attention_modules": true,
+    "finetune_mlp_modules": true,
+    "r": 16,
+    "lora_alpha": 16,
+    "lora_dropout": 0.0,
+    "bias": "none",
+    "random_state": 42,
+    "use_rslora": false,
+    "loftq_config": null
+  },
+  "trainer": {
+    "num_train_epochs": 3,
+    "per_device_train_batch_size": 16,
+    "per_device_eval_batch_size": 16,
+    "gradient_accumulation_steps": 2,
+    "learning_rate": 0.0001,
+    "optim": "adamw_8bit",
+    "weight_decay": 0.001,
+    "lr_scheduler_type": "linear",
+    "warmup_ratio": 0.05,
+    "max_grad_norm": 1.0,
+    "logging_steps": 10,
+    "eval_strategy": "epoch",
+    "save_strategy": "epoch",
+    "save_total_limit": 3,
+    "bf16": true,
+    "fp16": false,
+    "tf32": true,
+    "gradient_checkpointing": true,
+    "dataloader_num_workers": 4,
+    "seed": 42,
+    "data_seed": 42,
+    "report_to": "tensorboard",
+    "max_length": 2048
+  },
+  "loss": {
+    "train_on_responses_only": true,
+    "instruction_part": "<|im_start|>user\n",
+    "response_part": "</think>\n\n",
+    "completion_only_loss": true
+  },
+  "generation": {
+    "max_new_tokens": 32,
+    "do_sample": false
+  }
+}

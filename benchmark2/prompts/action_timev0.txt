@@ -1,0 +1,20 @@
+Classify these 3 chronological CCTV frames.
+
+Task:
+Detect fence/boundary intrusion.
+
+Labels:
+* normal: ordinary behavior unrelated to fence intrusion.
+* unsafe: near, approaching, checking, touching, or waiting around the fence/boundary, but still on normal ground.
+* danger: the person is off normal ground, already on a raised ledge/step/platform near the fence, has a foot lifted/placed for climbing, grabs the fence to climb, or starts crossing the boundary.
+
+Frame context:
+F1: frame={frame_1}, time={time_1}s, action={action_1}
+F2: frame={frame_2}, time={time_2}s, action={action_2}
+F3: frame={frame_3}, time={time_3}s, action={action_3}
+
+Look carefully at the feet: normal ground vs raised ledge/step/platform.
+Use images first. Check actions only as context.
+
+Return only:
+{"risk_state":"<normal|unsafe|danger>"}

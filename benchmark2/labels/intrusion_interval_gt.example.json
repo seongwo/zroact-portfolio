@@ -1,0 +1,14 @@
+{
+  "intrusion_climb-over-fence_rgb_0007_cctv3": [
+    {
+      "start_frame": 30,
+      "end_frame": 120,
+      "risk_state": "unsafe"
+    },
+    {
+      "start_frame": 121,
+      "end_frame": 210,
+      "risk_state": "danger"
+    }
+  ]
+}

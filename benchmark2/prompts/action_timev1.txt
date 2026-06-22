@@ -1,0 +1,30 @@
+Classify the risk state of these 3 chronological CCTV frames.
+
+Task:
+Detect climb-over-fence or restricted-boundary intrusion.
+
+Risk states:
+* normal: no intrusion-related behavior.
+* unsafe: near, approaching, checking, touching, waiting, or preparing around the fence/boundary, but not climbing.
+* danger: clear climbing or crossing evidence.
+
+Rules:
+1. Choose danger when a foot is on a step/fence, the person is already on a step/fence, the person is climbing, gripping the fence for body support, or the body starts crossing the boundary.
+2. Even if there is little motion across the frames, choose danger if the person is already on the fence/step or in a climbing posture.
+3. Choose unsafe for fence-related approach, checking, touching, waiting, or preparation without clear climbing.
+4. Choose normal when the fence is only background and the person shows no fence-directed behavior.
+
+Frame context:
+F1: frame={frame_1}, time={time_1}s, action={action_1}
+F2: frame={frame_2}, time={time_2}s, action={action_2}
+F3: frame={frame_3}, time={time_3}s, action={action_3}
+
+Use images first.
+Use actions only as temporal cues.
+stand, walk, sit, or none are neutral.
+carry/hold, bend/bow, or run/jog can support unsafe near the boundary, but not danger by themselves.
+
+Judge the 3 frames as one sequence.
+
+Return only one JSON object:
+{"risk_state":"<normal|unsafe|danger>"}

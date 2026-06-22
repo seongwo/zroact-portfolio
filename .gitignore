@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Large datasets and generated frames
+benchmark2/data/
+benchmark/Demo_data/
+**/frames_30fps/
+**/overlay_images/
+
+# Model weights and generated adapters
+benchmark2/models/
+**/*.safetensors
+**/*.pth
+**/*.pt
+**/*.ckpt
+**/checkpoint-*/
+**/final_adapter/
+unsloth_compiled_cache/
+
+# Experiment outputs and runtime jobs
+benchmark2/runs/
+benchmark2/results/
+benchmark/results_transformers/
+benchmark2/training/datasets/
+benchmark2/training/outputs/
+serving/jobs/
+
+# Temporary restore / scratch folders
+benchmark2/temp_restore/
+tmp/
+temp/
+
+# Logs and local artifacts
+*.log
+*.jsonl
+*.csv
+*.pdf
+*.html
+
+# Keep small examples and documentation assets when explicitly added
+!benchmark2/labels/*.example.json
+!docs/**/*.csv
+!docs/**/*.jsonl

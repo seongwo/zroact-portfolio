@@ -1,0 +1,19 @@
+{
+  "data_root": "./benchmark2/data/viz_shufflenet_test/test_frame_30fps",
+  "groups": [
+    "climb-over-fence_plant_rgb",
+    "climb-over-fence_smart_rgb",
+    "normal_plant_rgb"
+  ],
+  "stage1_window": 16,
+  "fps": 30,
+  "num_frames_per_request": 3,
+  "within_sequence_gap": 10,
+  "request_stride": 30,
+  "action_top_k": 2,
+  "include_action_score": false,
+  "danger_threshold": 0.30,
+  "unsafe_threshold": 0.30,
+  "missing_txt_policy": "normal_if_absent",
+  "target_mode": "unlabeled"
+}

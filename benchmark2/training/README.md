@@ -1,5 +1,7 @@
 # Qwen3.5-0.8B CCTV LoRA Training
 
+**공개 저장소 재현 상태:** 아래 내용은 원래 실험 환경의 기록입니다. 데이터·라벨·모델뿐 아니라 v2 설정의 고정 split 파일도 공개 checkout에 없습니다. 개인 경로를 그대로 실행하거나 split을 새로 생성하여 기존 결과의 재현으로 간주하지 마세요. [현재 실행 범위](../../docs/SETUP_AND_RUN.md)와 [결과 출처](../../docs/RESULT_PROVENANCE.md)를 먼저 확인하세요.
+
 현재 `viz_shufflenet_all_frame` 데이터로 Qwen3.5-0.8B Vision LoRA를 학습하기 위한 구성입니다.
 학습 스크립트는 실수로 실행되지 않도록 `--run` 플래그가 있어야만 시작됩니다.
 

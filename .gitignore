@@ -53,3 +53,6 @@ temp/
 !benchmark2/labels/*.example.json
 !docs/**/*.csv
 !docs/**/*.jsonl
+
+# Machine-specific configuration copies; keep credentials out of tracked files
+local/

@@ -1,60 +1,32 @@
-# Portfolio Notes
+# Research and contribution scope
 
-This page is written for a reviewer who wants to understand the work without downloading private datasets or large model files.
+## Research motivation
 
-## Project One-liner
+A small VLM can inspect only a limited number of frames. Action detection provides an additional representation of motion and behavior, which can be passed with sampled images and temporal context to the VLM. This project explores that design for CCTV intrusion risk classification.
 
-Built a two-stage CCTV intrusion risk analysis pipeline that combines YOWOv3 action detection with Qwen3.5 Vision fine-tuning to classify video moments as `normal`, `unsafe`, or `danger`.
+The connection to my broader research interests is **selecting and representing useful temporal information under a computation budget**, followed by task-specific adaptation with LoRA. It is a video/multimodal capstone, not a claim of a new general-purpose video foundation model.
 
-## Problem
+## Personal role and team scope
 
-Simple object detection is not enough for intrusion monitoring because the risk level depends on temporal context:
+**Seongwoo Lim: AI Leader / modeling**, as reported by the project author.
 
-- a person near a fence may be normal,
-- a person preparing near a fence may be unsafe,
-- a person climbing or crossing the fence is dangerous.
+The capstone included an end-to-end CCTV → backend → AI server → frontend dashboard system. This public repository contains AI-side dataset preparation, prompt variants, LoRA training/evaluation, pipeline integration, and a FastAPI serving interface. It does not contain the entire backend or frontend.
 
-The project turns short CCTV sequences into structured risk states that a backend or dashboard can consume.
+The code demonstrates these project components, but its one-commit public snapshot does not establish who authored each component. Exact file-level ownership, other team members' roles, and division of backend/serving work should be added from project records before making narrower personal-contribution claims. YOWOv3, Qwen, Unsloth, and other dependencies are upstream work.
 
-## My Work
+## What a reviewer can inspect
 
-- Designed the Stage 2 request format using three temporal images and Stage 1 action summaries.
-- Built scripts to merge image frames, Stage 1 action JSON, and frame-level risk labels into model-ready JSONL.
-- Added dataset validation for image paths, split leakage, schema consistency, and class distribution.
-- Implemented Qwen3.5 Vision LoRA training with response-only JSON loss.
-- Evaluated models using accuracy, macro F1, class-level recall, JSON success, schema success, and confusion matrices.
-- Built a FastAPI serving layer for backend video upload jobs.
-- Prototyped a daemon-based pipeline that keeps Stage 1 and Stage 2 workers loaded for lower-latency runtime.
-
-## Technical Choices
-
-| Choice | Reason |
+| Question | Public evidence |
 |---|---|
-| Three-frame VLM input | Gives short temporal context without making each request too heavy. |
-| Stage 1 action summaries | Adds motion/action priors that a single image may not reveal. |
-| Video-level split | Avoids train/test leakage from adjacent frames of the same video. |
-| `unsafe` oversampling | Compensates for the smallest and most ambiguous class. |
-| JSON-only output | Makes backend integration simple and testable. |
-| Separate serving logs and event logs | Allows the frontend to show only meaningful unsafe/danger events while preserving full traces. |
+| How is temporal context supplied? | Three selected images plus frame/time/action placeholders in [prompts](../benchmark2/prompts/action_timev1.txt) |
+| How are controlled input variants constructed? | Action/no-action prompts, [one-frame manifest builder](../benchmark2/scripts/build_one_frame_manifest.py), and [no-bbox image manifest builder](../benchmark2/scripts/build_no_bbox_manifest.py) |
+| How is task adaptation implemented? | [LoRA configuration](../benchmark2/training/configs/qwen35_08b_action_v2.json) and [training script](../benchmark2/training/scripts/train_lora.py) |
+| How is data leakage checked? | Video-level splits and [dataset validation](../benchmark2/training/scripts/validate_dataset.py) |
+| What are the reported findings? | [Experiment summary](EXPERIMENTS_SUMMARY.md), with split and artifact caveats in [result provenance](RESULT_PROVENANCE.md) |
+| What can run without private resources? | [Synthetic evaluation example](SETUP_AND_RUN.md#1-cpu-only-evaluation-example) |
 
-## Results Worth Highlighting
+## Limitations and next experiment
 
-- Qwen3.5-0.8B zero-shot collapsed mostly to `danger`.
-- Qwen3.5-0.8B LoRA learned stable JSON output and reached strong `normal`/`danger` separation.
-- Qwen3.5-2B zero-shot was much stronger overall, but still weak on `unsafe`.
-- The main remaining challenge is not formatting, but defining and learning the middle-risk boundary.
+The intermediate `unsafe` class is difficult, and stride-1 evaluation repeats nearby temporal evidence. Current public reports cannot isolate a LoRA gain because the recorded LoRA and baseline rows use different splits. The specific contribution of action cues also requires matching prompt versions, manifests, image sources, model checkpoints, and evaluation support.
 
-## Honest Limitations
-
-- `unsafe` recall is still the key weakness.
-- Adjacent stride-1 requests are highly correlated, so raw request counts can overstate independent events.
-- Some errors are concentrated in a small number of videos, which suggests transition-boundary or label-consistency issues.
-- Full reproduction requires private/local data and model weights not stored in git.
-
-## Good Next Steps
-
-1. Evaluate all Qwen3.5-2B LoRA checkpoints on validation.
-2. Compare 2B LoRA against 2B zero-shot using macro F1 and `unsafe` recall.
-3. Review the top error-concentrated videos frame by frame.
-4. Add a small public mock dataset or synthetic example so reviewers can run the pipeline shape without private data.
-5. Add screenshots or a short demo GIF from the serving output, without exposing private CCTV data.
+The next useful research step is to recover those run records, select checkpoints on validation, and evaluate the chosen configuration and its controls on the same held-out support. Publish a small de-identified metric artifact and protocol alongside any new claim. Do not substitute new experiments for missing records of earlier results.

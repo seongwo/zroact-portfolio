@@ -1,5 +1,7 @@
 # ZroAct AI Serving
 
+**Public-checkout status:** these are historical integration notes. The committed config lacks `jobs_root` and `conda_bin`, contains machine-specific paths, and the wrapper cannot override the separate Stage 1 config default. Authentication is disabled without `api_key`; do not place a real key in tracked files. See [current setup status](../docs/SETUP_AND_RUN.md#4-full-video-inference-and-serving) before attempting these examples.
+
 This folder is the backend-facing test interface for the ZroAct AI pipeline.
 It keeps the existing `benchmark2/` experiment code intact and wraps
 `pipeline/main.py` for upload-based backend integration.

@@ -1,6 +1,8 @@
 # Experiment Summary
 
-This summary is intentionally small enough to keep in git. Raw datasets, predictions, checkpoints, and generated outputs are excluded.
+These are historical reported results, not measurements regenerated from the public checkout. Raw datasets, predictions, checkpoints, and generated outputs are excluded. See [result provenance](RESULT_PROVENANCE.md) for missing artifacts and additional author-reported results awaiting run association.
+
+**Comparison boundary:** the recorded 0.8B LoRA result uses validation; both zero-shot tables use test. Do not subtract these rows to report a matched LoRA improvement.
 
 ## Dataset v2
 
@@ -84,7 +86,7 @@ On the test split, the base 0.8B model predicted almost every request as `danger
 | Macro F1 | 0.2149 |
 | JSON success rate | 0.9998 |
 
-This shows that LoRA was necessary for the 0.8B model to learn the target task and output format.
+This baseline exhibited a strong single-class bias in the recorded test run. The LoRA validation result shows different class behavior, but a same-split comparison is still needed to quantify the effect of adaptation.
 
 ## Qwen3.5-2B Zero-shot Baseline
 
@@ -121,7 +123,7 @@ Main observation:
 
 ## Qwen3.5-2B LoRA Status
 
-The local workspace contains completed 2B LoRA training checkpoints:
+The historical notes report completed 2B LoRA training checkpoints in the original local workspace. These artifacts are not present in this public checkout:
 
 ```text
 checkpoint-1397
@@ -140,6 +142,6 @@ The next useful step is to run validation generation for each checkpoint and com
 4. Invalid output count
 5. Accuracy
 
-## Key Research Finding
+## Observed limitation
 
-The project is not mainly limited by JSON formatting or `danger` detection. The core modeling issue is the semantic boundary around `unsafe`, especially during transition periods before or after clear climbing behavior.
+In the recorded 0.8B LoRA validation run, JSON formatting succeeds while `unsafe` recall remains low. The semantic boundary around transition periods is a hypothesis for further error analysis, not an established explanation or a general safety-performance claim.

@@ -1,81 +1,68 @@
-# ZroAct Stage 2
+# ZroAct: Action-guided Video Risk Reasoning
 
-ZroAct is a two-stage CCTV intrusion risk analysis project.
+**Research question:** How can a small vision-language model use temporal evidence when it can only receive a few frames from a longer CCTV video?
 
-The project connects a video action detector with a vision-language model so that CCTV clips can be converted into structured risk states:
+ZroAct is a **team capstone project** for industrial safety monitoring. It combines YOWOv3 action detections with sampled frames and temporal context, then uses a Qwen3.5 vision-language model to classify intrusion risk as `normal`, `unsafe`, or `danger`. The broader project includes backend and dashboard integration; this repository publishes the AI experiments, pipeline code, and backend-facing serving interface.
 
-```json
-{"risk_state":"normal|unsafe|danger"}
+**My role — Seongwoo Lim:** AI Leader / modeling. The components below describe the team's implementation; they are not a claim that I independently authored the entire system. See [contribution scope](docs/PORTFOLIO_NOTES.md).
+
+## Idea and implementation
+
+The modeling idea is to pass compact action evidence alongside visual samples instead of asking the VLM to process every video frame directly.
+
+```mermaid
+flowchart LR
+    V[Video] --> A[YOWOv3 action detection]
+    V --> F[Selected frames]
+    A --> T[Action names and temporal context]
+    F --> M[Qwen3.5 VLM]
+    T --> M
+    M --> R[Normal / Unsafe / Danger]
+    R --> S[Backend-facing job API]
 ```
 
-This repository is organized as a portfolio-ready engineering record. Large datasets, model weights, LoRA checkpoints, generated frames, and runtime outputs are intentionally excluded from git.
+The current training code builds three-frame requests at `t, t+10, t+20` and adds top-2 action names with frame indices and times. At 30 fps, the sampled images span about 0.67 seconds. The serving configuration samples Stage 1 every 10 frames; full-video temporal coverage is a design motivation, **not a claim that the current serving path evaluates every frame**. Bounding-box ablations switch the image source; the current training prompt does not serialize box coordinates. See the [architecture](docs/ARCHITECTURE.md) and [implementation/evidence map](docs/RESULT_PROVENANCE.md).
 
-## What This Project Does
+## Experiments recorded in this repository
 
-1. Stage 1 detects human action candidates from CCTV frames using YOWOv3.
-2. Stage 2 receives three time-ordered CCTV images plus Stage 1 action summaries.
-3. A Qwen3.5 Vision model classifies the request into `normal`, `unsafe`, or `danger`.
-4. The serving layer exposes the pipeline as backend-facing video jobs.
+These are **reported results from the committed documentation**, not results regenerated from the public checkout. Raw predictions, private data, and model checkpoints are absent.
 
-## Risk States
+| Model / setting | Split | Requests | Accuracy | Macro F1 |
+|---|---|---:|---:|---:|
+| Qwen3.5-0.8B zero-shot | Test | 5,007 | 0.4757 | 0.2149 |
+| Qwen3.5-0.8B LoRA, checkpoint-2794 | Validation | 4,924 | 0.9297 | 0.8454 |
+| Qwen3.5-2B zero-shot | Test | 5,007 | 0.8870 | 0.6970 |
 
-| State | Meaning |
+Sources: [experiment summary](docs/EXPERIMENTS_SUMMARY.md) and [detailed v2 report](benchmark2/training/V2_RESULTS_REPORT_KO.md). The LoRA row uses a different split from the zero-shot rows, so this table does not establish a matched performance gain. The 0.8B LoRA validation result has `unsafe` recall of 0.4614, a substantial remaining limitation.
+
+The LoRA configuration uses rank/alpha 16/16, vision/language/attention/MLP adaptation, 3 epochs, effective batch 32, and learning rate `1e-4`. Prompt and component ablation tools are included; their outcome tables require run-level provenance before being presented as verified public results.
+
+## Read and run
+
+| Entry point | What it shows |
 |---|---|
-| `normal` | No intrusion-related behavior is visible. |
-| `unsafe` | A person is approaching, waiting near, touching, or preparing around the boundary. |
-| `danger` | Clear intrusion evidence such as climbing or crossing the boundary is visible. |
+| [Portfolio notes](docs/PORTFOLIO_NOTES.md) | Research motivation, personal role, and limitations |
+| [Result provenance](docs/RESULT_PROVENANCE.md) | Which claims have code or recorded-result support |
+| [Setup and run](docs/SETUP_AND_RUN.md) | A CPU-only synthetic example and requirements for real experiments |
+| [Training guide](benchmark2/training/README.md) | Dataset construction, LoRA training, and evaluation |
+| [Repository map](docs/REPOSITORY_STRUCTURE.md) | Experimental, sequential, streaming, and serving paths |
 
-## Repository Map
-
-| Path | Purpose |
-|---|---|
-| `benchmark2/` | Stage 2 datasets, prompts, evaluation scripts, and training code. |
-| `benchmark2/training/` | Qwen3.5 LoRA dataset building, validation, training, and evaluation. |
-| `pipeline/` | Original sequential Stage 1 + Stage 2 runtime pipeline. |
-| `pipeline_ver2/` | HTTP daemon based streaming and parallel pipeline experiments. |
-| `serving/` | FastAPI backend integration layer for upload-based video jobs. |
-| `docs/` | Portfolio-friendly project documentation. |
-
-More detail is available in:
-
-- [Project Architecture](docs/ARCHITECTURE.md)
-- [Repository Structure](docs/REPOSITORY_STRUCTURE.md)
-- [Experiment Summary](docs/EXPERIMENTS_SUMMARY.md)
-- [Setup and Run Notes](docs/SETUP_AND_RUN.md)
-- [Portfolio Notes](docs/PORTFOLIO_NOTES.md)
-- [Git Publishing Checklist](docs/GIT_PUBLISHING_CHECKLIST.md)
-
-## Main Contributions Captured Here
-
-- Built a Stage 2 VLM classification dataset from CCTV image sequences, Stage 1 action JSON, and frame-level risk labels.
-- Designed request generation using three temporal frames: `t`, `t+10`, `t+20`.
-- Implemented Qwen3.5 Vision LoRA training and evaluation with JSON-only output.
-- Added dataset validation, split control, confusion matrix, and per-class metrics.
-- Built a FastAPI job interface for backend integration.
-- Prototyped a daemon-based realtime pipeline that keeps Stage 1 and Stage 2 workers loaded.
-
-## Current Experimental Status
-
-The strongest observed pattern is:
-
-- `normal` and `danger` are learned relatively well.
-- `unsafe` is the main bottleneck because it sits between normal behavior and clear intrusion.
-- Qwen3.5-2B zero-shot is much stronger than Qwen3.5-0.8B zero-shot, but still struggles on `unsafe`.
-- LoRA training clearly improves task formatting and class separation.
-
-See [Experiment Summary](docs/EXPERIMENTS_SUMMARY.md) for the metrics that are safe to share without committing large output files.
-
-## Git Hygiene
-
-This working directory contains large local assets such as data, model weights, checkpoints, generated frames, and logs. They should not be committed.
-
-Recommended first commit:
+A small evaluation example requires only Python 3.10+ and no videos, model downloads, or API keys:
 
 ```bash
-cd /home/capstone2/zroact-stage2
-git init
-git add README.md docs .gitignore benchmark2/scripts benchmark2/prompts benchmark2/training/scripts benchmark2/training/configs pipeline pipeline_ver2 serving requirements.txt benchmark2/training/requirements.txt
-git status
+python3 benchmark2/scripts/evaluate_stage2_results.py \
+  --gt-manifest docs/examples/mock_gt.jsonl \
+  --results-csv docs/examples/mock_predictions.csv
 ```
 
-Review `git status` carefully before committing.
+The deliberately synthetic example evaluates 3 requests, with 2 correct predictions. It demonstrates file formats and the evaluation path; **it is not a research result or model-inference demo**.
+
+Full reproduction remains incomplete: the public checkout lacks the private dataset and annotations, fixed video split file, YOWOv3 source/checkpoint, and VLM/LoRA weights. The historical serving config also needs repair before running jobs. [Setup notes](docs/SETUP_AND_RUN.md) separate the available run modes and blockers.
+
+## Research scope and limitations
+
+- This is a task-specific intrusion-monitoring study; the reported metrics do not establish general industrial-safety performance.
+- Stride-1 requests cover nearby moments in the same videos and are highly correlated. Request counts are not independent event counts.
+- Video-level splits avoid sharing a video across train/validation/test; they do not by themselves establish generalization across cameras or sites.
+- `pipeline_ver2/` contains streaming prototypes; no reproduced end-to-end latency claim is made here.
+- Dataset release rights, checkpoint redistribution, and an appropriate project license still need to be established before distributing those artifacts. No reuse license is currently included.

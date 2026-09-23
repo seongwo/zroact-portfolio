@@ -13,7 +13,7 @@ Input video
 
 ## Stage 1: Action Detection
 
-Stage 1 uses YOWOv3 to detect action candidates from CCTV frames.
+Stage 1 uses YOWOv3 to detect action candidates from CCTV frames. The public serving config uses `stage1_sample_rate=10`; it does not evaluate every extracted frame. Historical all-frame datasets and this sampled runtime are separate configurations.
 
 Runtime output is stored as frame-level JSON records. Each record contains:
 
@@ -23,7 +23,7 @@ Runtime output is stored as frame-level JSON records. Each record contains:
 - action class names,
 - action scores.
 
-For Stage 2, the system summarizes the top actions per selected frame. The current training setup uses action names only, not numeric confidence scores.
+For Stage 2, the system summarizes the top actions per selected frame. The current training setup uses action names only, not numeric confidence scores or serialized box coordinates. The no-bbox ablation changes the image source using `build_no_bbox_manifest.py`; exact image variants must be recorded with each result.
 
 ## Stage 2: VLM Risk Classification
 
@@ -74,7 +74,7 @@ Important training choices:
 
 ## Serving Architecture
 
-The serving layer lives in `serving`.
+The serving layer lives in `serving`. This is the AI-side job interface; the capstone backend and dashboard are not included here. The committed config is incomplete for the sequential wrapper; see [setup blockers](SETUP_AND_RUN.md#4-full-video-inference-and-serving).
 
 ```text
 Backend

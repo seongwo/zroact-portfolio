@@ -1,0 +1,5 @@
+request_id,pred_risk_state
+mock-normal,normal
+mock-unsafe,danger
+mock-danger,danger
+mock-excluded,normal

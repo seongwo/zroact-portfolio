@@ -1,0 +1,4 @@
+{"request_id":"mock-normal","sequence_gt":"normal","use_for_eval":true}
+{"request_id":"mock-unsafe","sequence_gt":"unsafe","use_for_eval":true}
+{"request_id":"mock-danger","sequence_gt":"danger","use_for_eval":true}
+{"request_id":"mock-excluded","sequence_gt":"unsafe","use_for_eval":false}

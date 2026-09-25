@@ -8,7 +8,7 @@ The connection to my broader research interests is **selecting and representing 
 
 ## Personal role and team scope
 
-**Seongwoo Lim — AI Leader / modeling.**
+**Seong-U IM — AI Leader / modeling.**
 
 The capstone included an end-to-end CCTV → backend → AI server → frontend dashboard system. This public repository contains AI-side dataset preparation, prompt variants, LoRA training/evaluation, pipeline integration, and a FastAPI serving interface. It does not contain the entire backend or frontend.
 

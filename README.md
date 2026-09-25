@@ -1,6 +1,6 @@
 # ZroAct · Video-Language Safety Monitoring
 
-A team capstone on CCTV intrusion risk detection. **Seongwoo Lim — AI Leader / modeling.**
+A team capstone on CCTV intrusion risk detection. **Seong-U IM — AI Leader / modeling.**
 
 A small vision-language model can receive only a few frames from a longer video. We used YOWOv3 action detections to supply additional action and temporal context, then asked a Qwen3.5 VLM to classify risk as `normal`, `unsafe`, or `danger`.
 

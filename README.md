@@ -1,14 +1,14 @@
-# ZroAct: Action-guided Video Risk Reasoning
+# ZroAct · Video-Language Safety Monitoring
 
-**Research question:** How can a small vision-language model use temporal evidence when it can only receive a few frames from a longer CCTV video?
+A team capstone on CCTV intrusion risk detection. **Seongwoo Lim — AI Leader / modeling.**
 
-ZroAct is a **team capstone project** for industrial safety monitoring. It combines YOWOv3 action detections with sampled frames and temporal context, then uses a Qwen3.5 vision-language model to classify intrusion risk as `normal`, `unsafe`, or `danger`. The broader project includes backend and dashboard integration; this repository publishes the AI experiments, pipeline code, and backend-facing serving interface.
+A small vision-language model can receive only a few frames from a longer video. We used YOWOv3 action detections to supply additional action and temporal context, then asked a Qwen3.5 VLM to classify risk as `normal`, `unsafe`, or `danger`.
 
-**My role — Seongwoo Lim:** AI Leader / modeling. The components below describe the team's implementation; they are not a claim that I independently authored the entire system. See [contribution scope](docs/PORTFOLIO_NOTES.md).
+The team built a system connecting CCTV, a backend, an AI server, and a dashboard. This repository contains the AI pipeline, serving interface, and experiments. [Project roles and scope](docs/PORTFOLIO_NOTES.md) are described separately.
 
-## Idea and implementation
+## Approach
 
-The modeling idea is to pass compact action evidence alongside visual samples instead of asking the VLM to process every video frame directly.
+Stage 1 extracts action information. Stage 2 uses that information together with selected frames for risk classification.
 
 ```mermaid
 flowchart LR
@@ -21,11 +21,11 @@ flowchart LR
     R --> S[Backend-facing job API]
 ```
 
-The current training code builds three-frame requests at `t, t+10, t+20` and adds top-2 action names with frame indices and times. At 30 fps, the sampled images span about 0.67 seconds. The serving configuration samples Stage 1 every 10 frames; full-video temporal coverage is a design motivation, **not a claim that the current serving path evaluates every frame**. Bounding-box ablations switch the image source; the current training prompt does not serialize box coordinates. See the [architecture](docs/ARCHITECTURE.md) and [implementation/evidence map](docs/RESULT_PROVENANCE.md).
+The current training code builds three-frame requests at `t, t+10, t+20` and adds top-2 action names with frame indices and times. At 30 fps, the sampled images span about 0.67 seconds. The serving configuration runs Stage 1 at a stride of 10 frames. Bounding-box ablations switch the image source; the current training prompt does not serialize box coordinates. See the [architecture](docs/ARCHITECTURE.md) and [implementation/evidence map](docs/RESULT_PROVENANCE.md).
 
-## Experiments recorded in this repository
+## Experiments
 
-These are **reported results from the committed documentation**, not results regenerated from the public checkout. Raw predictions, private data, and model checkpoints are absent.
+The following results are recorded in the experiment reports. Raw predictions, data, and checkpoints are not included in this repository.
 
 | Model / setting | Split | Requests | Accuracy | Macro F1 |
 |---|---|---:|---:|---:|
@@ -35,14 +35,14 @@ These are **reported results from the committed documentation**, not results reg
 
 Sources: [experiment summary](docs/EXPERIMENTS_SUMMARY.md) and [detailed v2 report](benchmark2/training/V2_RESULTS_REPORT_KO.md). The LoRA row uses a different split from the zero-shot rows, so this table does not establish a matched performance gain. The 0.8B LoRA validation result has `unsafe` recall of 0.4614, a substantial remaining limitation.
 
-The LoRA configuration uses rank/alpha 16/16, vision/language/attention/MLP adaptation, 3 epochs, effective batch 32, and learning rate `1e-4`. Prompt and component ablation tools are included; their outcome tables require run-level provenance before being presented as verified public results.
+The LoRA configuration uses rank/alpha 16/16, vision/language/attention/MLP adaptation, 3 epochs, effective batch 32, and learning rate `1e-4`. Prompt/component ablation tools are also included. Additional result tables still need to be matched to their original runs.
 
-## Read and run
+## Code and documentation
 
 | Entry point | What it shows |
 |---|---|
-| [Portfolio notes](docs/PORTFOLIO_NOTES.md) | Research motivation, personal role, and limitations |
-| [Result provenance](docs/RESULT_PROVENANCE.md) | Which claims have code or recorded-result support |
+| [Project roles](docs/PORTFOLIO_NOTES.md) | Research motivation, personal role, and limitations |
+| [Result provenance](docs/RESULT_PROVENANCE.md) | Model settings, result sources, and open questions |
 | [Setup and run](docs/SETUP_AND_RUN.md) | A CPU-only synthetic example and requirements for real experiments |
 | [Training guide](benchmark2/training/README.md) | Dataset construction, LoRA training, and evaluation |
 | [Repository map](docs/REPOSITORY_STRUCTURE.md) | Experimental, sequential, streaming, and serving paths |
@@ -55,11 +55,11 @@ python3 benchmark2/scripts/evaluate_stage2_results.py \
   --results-csv docs/examples/mock_predictions.csv
 ```
 
-The deliberately synthetic example evaluates 3 requests, with 2 correct predictions. It demonstrates file formats and the evaluation path; **it is not a research result or model-inference demo**.
+This synthetic example checks the evaluator and file formats: 3 requests, with 2 correct predictions. It does not run a model.
 
 Full reproduction remains incomplete: the public checkout lacks the private dataset and annotations, fixed video split file, YOWOv3 source/checkpoint, and VLM/LoRA weights. The historical serving config also needs repair before running jobs. [Setup notes](docs/SETUP_AND_RUN.md) separate the available run modes and blockers.
 
-## Research scope and limitations
+## Limitations
 
 - This is a task-specific intrusion-monitoring study; the reported metrics do not establish general industrial-safety performance.
 - Stride-1 requests cover nearby moments in the same videos and are highly correlated. Request counts are not independent event counts.
